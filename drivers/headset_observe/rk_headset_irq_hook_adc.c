@@ -506,7 +506,7 @@ static int rockchip_headsetobserve_probe(struct platform_device *pdev)
 	input_set_capability(headset->input_dev, EV_KEY, pdata->hook_key_code);
 //------------------------------------------------------------------
 	if (pdata->Headset_gpio) {
-		ret = pdata->headset_io_init(pdata->Headset_gpio, pdata->headset_gpio_info.iomux_name, pdata->headset_gpio_info.iomux_mode);
+		ret = pdata->headset_io_init();
 		if (ret) 
 			goto failed_free;
 
