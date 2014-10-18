@@ -54,7 +54,13 @@ config THREE_FB_BUFFER
         depends on FB_ROCKCHIP
         default y
         help
-           select y if android support three buffer,like Jelly Bean
+           select y if android support three buffer,like Jelly Bean           
+config VSYNC_WORKAROUND
+	bool"60Hz refresh rate fix"
+	depends on FB_ROCKCHIP
+	default n
+	help
+	  workaround to achieve 60Hz refresh rate         
 
 
 source "drivers/video/rockchip/lcdc/Kconfig"

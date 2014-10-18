@@ -18,12 +18,20 @@
 #define LCDC_ACLK         300000000           //29 lcdc axi DMA ÆµÂÊ
 
 /* Timing */
+#if defined(CONFIG_VSYNC_WORKAROUND)
+#define H_PW			64
+#else
 #define H_PW			5
+#endif
 #define H_BP			60
 #define H_VD			800
 #define H_FP			1
 
+#if defined(CONFIG_VSYNC_WORKAROUND)
+#define V_PW			50
+#else
 #define V_PW			2
+#endif
 #define V_BP			8
 #define V_VD			1280
 #define V_FP			1
