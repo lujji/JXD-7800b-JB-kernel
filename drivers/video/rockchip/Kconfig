@@ -60,7 +60,13 @@ config VSYNC_WORKAROUND
 	depends on FB_ROCKCHIP
 	default n
 	help
-	  workaround to achieve 60Hz refresh rate         
+	  workaround to achieve 60Hz refresh rate      
+config FORCE_RK_FBIOSET_VSYNC
+	bool"RK_FBIOSET_VSYNC fix"
+	depends on FB_ROCKCHIP
+	default n
+	help
+	  force RK_FBIOSET_VSYNC to return 0
 
 
 source "drivers/video/rockchip/lcdc/Kconfig"
