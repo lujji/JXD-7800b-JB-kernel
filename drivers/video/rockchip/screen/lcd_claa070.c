@@ -1,8 +1,6 @@
 #ifndef __lcd_claa070__
 #define __lcd_claa070__
 
-
-
 /* Base */
 #if  defined(CONFIG_RK616_LVDS)
 #define SCREEN_TYPE	    	SCREEN_LVDS
@@ -13,32 +11,22 @@
 
 #define OUT_FACE		OUT_P666
 
+#define DCLK	        74770000
+#define LCDC_ACLK       300000000           //29 lcdc axi DMA é¢‘çŽ‡
 
-#define DCLK	          74600000
-#define LCDC_ACLK         300000000           //29 lcdc axi DMA ÆµÂÊ
+#define H_VD			800     /*x_res*/
+#define H_PW			18      /*hsync_len */
+#define H_BP			28      /*left_margin*/
+#define H_FP			97      /*right_margin*/
 
-/* Timing */
-#if defined(CONFIG_VSYNC_WORKAROUND)
-#define H_PW			64
-#else
-#define H_PW			5
-#endif
-#define H_BP			60
-#define H_VD			800
-#define H_FP			1
+#define V_VD			1280    /*y_res*/
+#define V_PW			8       /*vsync_len*/
+#define V_BP			8       /*upper_margin*/
+#define V_FP			16      /*lower_margin*/
 
-#if defined(CONFIG_VSYNC_WORKAROUND)
-#define V_PW			50
-#else
-#define V_PW			2
-#endif
-#define V_BP			8
-#define V_VD			1280
-#define V_FP			1
+#define LCD_WIDTH       94
+#define LCD_HEIGHT      151
 
-
-#define LCD_WIDTH          	174
-#define LCD_HEIGHT         	135
 /* Other */
 #if defined(CONFIG_RK610_LVDS) || defined(CONFIG_RK616_LVDS)  
 #define DCLK_POL	1
