@@ -29,7 +29,7 @@
 #include <plat/pwm.h>
 
 #define PWM_DIV              PWM_DIV2
-#define PWM_APB_PRE_DIV      1000
+#define PWM_APB_PRE_DIV      40*1000
 #define BL_STEP              (255)
 #define MAX_BRIGHTNESS_CORRECT (50)
 
