@@ -243,6 +243,8 @@ enum {
 	#define m_DDC_SDA	(1 << 5)
 	#define m_DDC_SDC	(1 << 4)
 
+#define HDMI_COLORBAR				0xc9
+
 #define PHY_SYNC				0xce		//sync phy parameter				
 #define PHY_SYS_CTL 			0xe0
 	#define m_TMDS_CLK_SOURCE 	(1<<5)
@@ -285,6 +287,7 @@ enum {
 #define PHY_PRE_DIV_RATIO 		0xed
 	#define v_PRE_DIV_RATIO(n) 	(n&1f)
 
+#ifndef CONFIG_ARCH_RK3026
 static inline int hdmi_readl(u16 offset, u32 *val)
 {
         int ret;
@@ -314,6 +317,37 @@ static inline int hdmi_msk_reg(u16 offset, u32 msk, u32 val)
         ret = rk616_hdmi->rk616_drv->write_dev_bits(rk616_hdmi->rk616_drv, (RK616_HDMI_BASE + ((offset)<<2)), msk, &val);
         return ret;
 }
+#else
+
+static inline int hdmi_readl(u16 offset, u32 *val)
+{
+        int ret = 0;
+	*val = readl_relaxed(hdmi->regbase + (offset) * 0x04);
+        return ret;
+}
+
+static inline int hdmi_writel(u16 offset, u32 val)
+{
+        int ret = 0;
+        writel_relaxed(val, hdmi->regbase + (offset) * 0x04);
+        return ret;
+}
+
+static inline int hdmi_msk_reg(u16 offset, u32 msk, u32 val)
+{
+        int ret = 0;
+        u32 temp;
+        temp = readl_relaxed(hdmi->regbase + (offset) * 0x04) & (0xFF - (msk));
+        writel_relaxed(temp | ( (val) & (msk) ),  hdmi->regbase + (offset) * 0x04);
+        return ret;
+}
+static inline void rk3028_hdmi_reset_pclk(void)
+{
+        writel_relaxed(0x00010001,RK2928_CRU_BASE+ 0x128);
+        msleep(100);
+        writel_relaxed(0x00010000, RK2928_CRU_BASE + 0x128);
+}
+#endif
 
 extern int rk616_hdmi_initial(void);
 extern void rk616_hdmi_work(void);

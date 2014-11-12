@@ -15,12 +15,12 @@ static const struct fb_videomode hdmi_mode [] = {
 //{	"720x576i@50Hz",		50,		720,	576,	27000000,	138,	24,	19,	2,	126,	3,	0,	1,	21	},
 {	"720x480p@60Hz",	60,		720,	480,	27000000,	60,	16,	30,	9,	62,	6,	0,	0,	2	},
 {	"720x576p@50Hz",	50,		720,	576,	27000000,	68,	12,	39,	5,	64,	5,	0,	0,	17	},
-//{	"1280x720p@24Hz",	24,		1280,	720,	59400000,	220,	1760,	20,	5,	40,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		60	},
+{	"1280x720p@24Hz",	24,		1280,	720,	59400000,	220,	1760,	20,	5,	40,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		60	},
 //{	"1280x720p@25Hz",	25,		1280,	720,	74250000,	220,	2420,	20,	5,	40,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		61	},
 //{	"1280x720p@30Hz",	30,		1280,	720,	74250000,	220,	1760,	20,	5,	40,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		62	},
 {	"1280x720p@50Hz",	50,		1280,	720,	74250000,	220,	440,	20,	5,	40,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		19	},
 {	"1280x720p@60Hz",	60,		1280,	720,	74250000,	220,	110,	20,	5,	40,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		4	},
-//{	"1920x1080p@24Hz",	24,		1920,	1080,	74250000,	148,	638,	36,	4,	44,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		32	},
+{	"1920x1080p@24Hz",	24,		1920,	1080,	74250000,	148,	638,	36,	4,	44,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		32	},
 //{	"1920x1080p@25Hz",	25,		1920,	1080,	74250000,	148,	528,	36,	4,	44,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		33	},
 //{	"1920x1080p@30Hz",	30,		1920,	1080,	74250000,	148,	88,	36,	4,	44,	5,	FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,			0,		34	},	
 //{	"1920x1080i@50Hz_2",	50,		1920,	1080,	72000000,	184,	32,	57,	23,	168,	5,	FB_SYNC_HOR_HIGH_ACT,			1,		39	},
@@ -107,10 +107,11 @@ int hdmi_set_info(struct rk29fb_screen *screen, unsigned int vic)
 	screen->hdmi_resolution = hdmi_mode[i].flag;
 
 	/* Pin polarity */
-#ifdef CONFIG_HDMI_RK616
+#if defined(CONFIG_HDMI_RK616) && !defined(CONFIG_ARCH_RK3026)
 	screen->pin_hsync = 0;
 	screen->pin_vsync = 0;
 #else 
+	screen->pin_hsync = 0;
 	if(FB_SYNC_HOR_HIGH_ACT & hdmi_mode[i].sync)
 		screen->pin_hsync = 1;
 	else

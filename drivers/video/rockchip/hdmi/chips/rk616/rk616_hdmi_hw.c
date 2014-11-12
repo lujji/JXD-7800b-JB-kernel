@@ -7,14 +7,13 @@
 
 // static char edid_result = 0;
 
-
+#ifndef CONFIG_ARCH_RK3026
 static int rk616_set_polarity(struct mfd_rk616 * rk616, int vic)
 {
         u32 val;
         int ret;
         u32 hdmi_polarity_mask = (3<<14);
 
-        // printk("----------xhc---------vic = %d\n", vic);
         switch(vic)
         {
                 
@@ -48,7 +47,6 @@ static int rk616_hdmi_set_vif(rk_screen * screen,bool connect)
         struct rk616_hdmi *rk616_hdmi;
         rk616_hdmi = container_of(hdmi, struct rk616_hdmi, g_hdmi);
 
-
         if (connect) 
                 rk616_set_polarity(rk616_hdmi->rk616_drv, hdmi->vic); 
 
@@ -60,15 +58,18 @@ static int rk616_hdmi_init_pol_set(struct mfd_rk616 * rk616,int pol)
 {
 	u32 val;
 	int ret;
-	ret = rk616->read_dev(rk616,CRU_CFGMISC_CON,&val);
-	if(pol)
-		val &= 0xffffffdf;
-	else
-		val |= 0x20;
-	ret = rk616->write_dev(rk616,CRU_CFGMISC_CON,&val);
+        int int_pol_mask = (1 << 5);
+
+        if (pol) 
+                val = 0x0;
+        else
+                val = 0x20;
+        ret = rk616->write_dev_bits(rk616, CRU_CFGMISC_CON, int_pol_mask, &val);
 
 	return 0;
 }
+#endif
+
 static inline void delay100us(void)
 {
 	msleep(1);
@@ -99,8 +100,14 @@ static void rk616_hdmi_set_pwr_mode(int mode)
      case NORMAL:
 	     hdmi_dbg(hdmi->dev,"%s change pwr_mode NORMALpwr_mode = %d, mode = %d\n",__FUNCTION__,hdmi->pwr_mode,mode);
 	   	rk616_hdmi_sys_power_down();
-		hdmi_writel(PHY_DRIVER,0xaa);
-		hdmi_writel(PHY_PRE_EMPHASIS,0x0f);
+                if (!(hdmi->set_vif) && (hdmi->vic == HDMI_1920x1080p_60Hz || hdmi->vic == HDMI_1920x1080p_50Hz)) {
+                        /* 3026 and 1080p */
+        		hdmi_writel(PHY_DRIVER,0xcc);
+	        	hdmi_writel(PHY_PRE_EMPHASIS,0x4f);
+                } else {
+        		hdmi_writel(PHY_DRIVER,0x99);
+	        	hdmi_writel(PHY_PRE_EMPHASIS,0x0f);
+                }
 		hdmi_writel(PHY_SYS_CTL,0x2d);
 		hdmi_writel(PHY_SYS_CTL,0x2c);
 		hdmi_writel(PHY_SYS_CTL,0x28);
@@ -287,8 +294,8 @@ static int rk616_hdmi_config_video(struct hdmi_video_para *vpara)
 
 
 	vpara->output_color = VIDEO_OUTPUT_RGB444;
-	if(hdmi->hdcp_power_off_cb)
-		hdmi->hdcp_power_off_cb();
+	//if(hdmi->hdcp_power_off_cb)
+	//	hdmi->hdcp_power_off_cb();
 		// Diable video and audio output
 	hdmi_writel(AV_MUTE, v_AUDIO_MUTE(1) | v_VIDEO_MUTE(1));
 	
@@ -358,7 +365,6 @@ static int rk616_hdmi_config_video(struct hdmi_video_para *vpara)
 	value = mode->vsync_len;
 	hdmi_writel(VIDEO_EXT_VDURATION, value & 0xFF);
 #endif
-        //rk616_set_polarity(rk616_hdmi->rk616_drv, vpara->vic); 
 
         if(vpara->output_mode == OUTPUT_HDMI) {
 		rk616_hdmi_config_avi(vpara->vic, vpara->output_color);
@@ -368,19 +374,15 @@ static int rk616_hdmi_config_video(struct hdmi_video_para *vpara)
 		hdmi_dbg(hdmi->dev, "[%s] sucess output DVI.\n", __FUNCTION__);	
 	}
 	
-#if 1
-        hdmi_writel(0xed, 0x0f);
-        hdmi_writel(0xe7, 0x96);
-#else
-	if(hdmi->tmdsclk >= 148500000) {
-		hdmi_writel(0xed, 0xc);
-		hdmi_writel(0xe7, 0x78);
-	}
-	else {
-		hdmi_writel(0xed, 0x3);
-		hdmi_writel(0xe7, 0x1e);
-	}
-#endif
+        // if(rk616_hdmi->rk616_drv) {     
+        if (hdmi->set_vif) {
+                hdmi_writel(0xed, 0x0f);
+                hdmi_writel(0xe7, 0x96);
+        } else {        // rk3028a
+                hdmi_writel(0xed, 0x1e);
+                hdmi_writel(0xe7, 0x2c);
+                hdmi_writel(0xe8, 0x01);
+        }
 	return 0;
 }
 
@@ -507,7 +509,9 @@ void rk616_hdmi_control_output(int enable)
 
 int rk616_hdmi_removed(void)
 {
-
+        if(hdmi->hdcp_power_off_cb)
+		hdmi->hdcp_power_off_cb();
+        // rk616_hdcp_stop_authentication();
 	dev_printk(KERN_INFO , hdmi->dev , "Removed.\n");
 	rk616_hdmi_set_pwr_mode(LOWER_PWR);
 
@@ -520,6 +524,7 @@ void rk616_hdmi_work(void)
 	u32 interrupt = 0;
         // int value = 0;
 
+        
         hdmi_readl(INTERRUPT_STATUS1,&interrupt);
         if(interrupt){
                 hdmi_writel(INTERRUPT_STATUS1, interrupt);
@@ -541,9 +546,9 @@ void rk616_hdmi_work(void)
 		rk616_hdmi_set_pwr_mode(LOWER_PWR);
 	}
 #endif
-#if 0
+#if 1
 	if(hdmi->hdcp_irq_cb)
-		hdmi->hdcp_irq_cb(interrupt2);
+		hdmi->hdcp_irq_cb(0);
 #endif
 }
 
@@ -576,11 +581,16 @@ int rk616_hdmi_initial(void)
 	hdmi->config_audio = rk616_hdmi_config_audio;
 	hdmi->detect_hotplug = rk616_hdmi_detect_hotplug;
 	hdmi->read_edid = rk616_hdmi_read_edid;
-	hdmi->set_vif = rk616_hdmi_set_vif;
-	
-	rk616_hdmi_reset();
 
+#ifdef CONFIG_ARCH_RK3026
+        rk3028_hdmi_reset_pclk();
+        rk616_hdmi_reset();
+#else
+        hdmi->set_vif = rk616_hdmi_set_vif;
+        rk616_hdmi_reset();
 	rk616_hdmi_init_pol_set(rk616_hdmi->rk616_drv, 0);
+#endif
+        
 	if(hdmi->hdcp_power_on_cb)
 		rc = hdmi->hdcp_power_on_cb();
 
