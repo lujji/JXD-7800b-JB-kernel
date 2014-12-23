@@ -2633,15 +2633,19 @@ static void __init rk30_reserve(void)
  */
 
 #if defined(CONFIG_ARCH_RK3188)
-//sdk
+//powersave
 static struct cpufreq_frequency_table dvfs_arm_table_volt_level0[] = {
+	{.frequency = 252 * 1000,       .index = 800 * 1000},
 	{.frequency = 312 * 1000,       .index = 850 * 1000},
-	{.frequency = 504 * 1000,       .index = 900 * 1000},
-	{.frequency = 816 * 1000,       .index = 950 * 1000},
-	{.frequency = 1008 * 1000,      .index = 1025 * 1000},
-	{.frequency = 1200 * 1000,      .index = 1100 * 1000},
-	{.frequency = 1416 * 1000,      .index = 1200 * 1000},
-	{.frequency = 1608 * 1000,      .index = 1300 * 1000},
+	{.frequency = 504 * 1000,       .index = 875 * 1000},
+	{.frequency = 816 * 1000,       .index = 900 * 1000},
+	{.frequency = 1008 * 1000,      .index = 950 * 1000},
+	{.frequency = 1200 * 1000,      .index = 1025 * 1000},
+	{.frequency = 1416 * 1000,      .index = 1175 * 1000},
+	{.frequency = 1512 * 1000,      .index = 1200 * 1000},
+	{.frequency = 1608 * 1000,      .index = 1225 * 1000},
+	{.frequency = 1704 * 1000,		.index = 1275 * 1000},
+	{.frequency = 1800 * 1000,      .index = 1325 * 1000},
 	{.frequency = CPUFREQ_TABLE_END},
 };
 //default
@@ -2652,19 +2656,20 @@ static struct cpufreq_frequency_table dvfs_arm_table_volt_level1[] = {
 	{.frequency = 1008 * 1000,      .index = 1100 * 1000},
 	{.frequency = 1200 * 1000,      .index = 1175 * 1000},
 	{.frequency = 1416 * 1000,      .index = 1275 * 1000},
-//	{.frequency = 1550 * 1000,      .index = 1350 * 1000},	
 	{.frequency = 1608 * 1000,      .index = 1350 * 1000},
 	{.frequency = CPUFREQ_TABLE_END},
 };
-// cube 10'
+//overclock
 static struct cpufreq_frequency_table dvfs_arm_table_volt_level2[] = {
 	{.frequency = 312 * 1000,       .index = 900 * 1000},
-	{.frequency = 504 * 1000,       .index = 925 * 1000},
+	{.frequency = 504 * 1000,       .index = 950 * 1000},
 	{.frequency = 816 * 1000,       .index = 1000 * 1000},
-	{.frequency = 1008 * 1000,      .index = 1075 * 1000},
-	{.frequency = 1200 * 1000,      .index = 1200 * 1000},
-	{.frequency = 1416 * 1000,      .index = 1250 * 1000},
+	{.frequency = 1008 * 1000,      .index = 1100 * 1000},
+	{.frequency = 1200 * 1000,      .index = 1175 * 1000},
+	{.frequency = 1416 * 1000,      .index = 1275 * 1000},
 	{.frequency = 1608 * 1000,      .index = 1350 * 1000},
+	{.frequency = 1704 * 1000,		.index = 1350 * 1000},
+	{.frequency = 1800 * 1000,      .index = 1350 * 1000},
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
@@ -2700,8 +2705,13 @@ static struct cpufreq_frequency_table dvfs_ddr_table_volt_level0[] = {
 	{.frequency = CPUFREQ_TABLE_END},
 };
 
-//if you board is good for volt quality,select dvfs_arm_table_volt_level0
-#define dvfs_arm_table dvfs_arm_table_volt_level1
+#if defined (CONFIG_CPUFREQ_TABLE_POWERSAVE_OVERCLOCK)
+	#define dvfs_arm_table dvfs_arm_table_volt_level0
+#elif defined (CONFIG_CPUFREQ_TABLE_OVERCLOCK)
+	#define dvfs_arm_table dvfs_arm_table_volt_level2
+#else
+	#define dvfs_arm_table dvfs_arm_table_volt_level1
+#endif
 #define dvfs_gpu_table dvfs_gpu_table_volt_level1
 #define dvfs_ddr_table dvfs_ddr_table_volt_level0
 

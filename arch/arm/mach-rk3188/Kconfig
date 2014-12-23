@@ -39,7 +39,31 @@ config MACH_RK3188_FAC
 
 config MACH_RK3188_PHONEPAD
     bool "RK3188 phonepad board"
+   
 
 config MACH_RK3188_RK618_3G
     bool "RK3188 RK618 AND 3G public board"
 endchoice
+
+choice
+	prompt "CPU frequency table"
+	depends on MACH_RK3188_PHONEPAD
+
+config CPUFREQ_TABLE_DEFAULT
+	bool "Default"
+	help
+	  Default level1 table. 1608 MHz unlocked for all processors.
+
+config CPUFREQ_TABLE_OVERCLOCK
+	bool "Overclock"
+	help
+	  Maximum CPU frequency is 1704 MHz (RK3188-T) or 1800 MHz (RK3188).
+	  Added 1512 MHz intermediate frequency.
+
+config CPUFREQ_TABLE_POWERSAVE_OVERCLOCK
+	bool "Overclock with lower voltages"
+	help
+	  Slightly more battery life. Might cause instabilities.
+	  Minimum frequency at 252 MHz.
+
+endchoice 
